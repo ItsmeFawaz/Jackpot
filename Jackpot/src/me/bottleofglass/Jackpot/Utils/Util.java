@@ -2,10 +2,10 @@ package me.bottleofglass.Jackpot.Utils;
 
 public class Util {
 	
-	public static long getMS(String s) {
+	public static long getTicks(String s) {
 		
 		long t;
-		switch(s.charAt(s.length()-1)) {
+		switch(s.charAt(s.length()-1)) { // takes inputs like 1h/2h/3h etc and returns time in ticks
 		case 'h':
 			t = lastRemover(s)* 72000;
 			break;
@@ -26,9 +26,9 @@ public class Util {
 	}
 	
 	public static int lastRemover(String s) {
-		return Integer.parseInt(s.substring(0, s.length()-1));
+		return Integer.parseInt(s.substring(0, s.length()-1)); //removes the time counter s/m/h/d etc from time
 	}
-	public static long getSeconds(String s) {
+	public static long getSeconds(String s) { 
 		long t;
 		switch(s.charAt(s.length()-1)) {
 		case 'h':

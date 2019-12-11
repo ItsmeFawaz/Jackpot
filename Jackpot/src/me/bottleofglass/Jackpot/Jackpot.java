@@ -16,25 +16,25 @@ import net.milkbowl.vault.economy.Economy;
 
 public class Jackpot {
 	
-	public int prizepool;
+	public int prizepool; //Prize Money
 	
-	public int ticket;
+	public int ticket; //The money each player needs before being able to join
 	
-	long time;
+	long time; //Time on ticks to use on methods
 	
-	private Main main;
+	private Main main; //The main plugin
 	
-	FileConfiguration config;
+	FileConfiguration config; //config file
 	
-	BukkitTask reminder;
+	BukkitTask reminder; //The task that announces the running jackpot
 	
-	public boolean isRunning = false;
+	public boolean isRunning = false; //The boolean that holds if the Jackpot is running or not, there can only be 1 jackpot at a time
 	
-	Economy econ;
+	Economy econ; //Vault Economy
 	
-	int timeRemaining;
+	int timeRemaining; // Remaining time
 	
-	List<OfflinePlayer> playerList = new ArrayList<>();
+	List<OfflinePlayer> playerList = new ArrayList<>(); // List of players that joined
 	
 	long seconds;
 	
@@ -49,7 +49,7 @@ public class Jackpot {
 		
 		ticket = ticketprice;
 		
-		time = Util.getMS(timeString);
+		time = Util.getTicks(timeString);
 		
 		seconds = Util.getSeconds(timeString);
 		config = main.getConfig();
@@ -80,7 +80,7 @@ public class Jackpot {
 						Util.getRemainingTime(seconds)));
 				
 			}
-		} , 0, Util.getMS(config.getString("reminderDelay")));
+		} , 0, Util.getTicks(config.getString("reminderDelay")));
 		
 		
 		

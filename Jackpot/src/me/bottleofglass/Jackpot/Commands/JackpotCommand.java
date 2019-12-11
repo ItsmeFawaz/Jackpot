@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 
 import me.bottleofglass.Jackpot.Jackpot;
 import me.bottleofglass.Jackpot.Main;
+import me.bottleofglass.Jackpot.Utils.Util;
 
 public class JackpotCommand implements CommandExecutor {
 	
@@ -34,11 +35,14 @@ public class JackpotCommand implements CommandExecutor {
 						+ "&8/jackpot join - "));
 				break;
 			case "start":
-				if(args[1] != null && sender.hasPermission(main.perm)) {
+				if(args.length >= 2 && sender.hasPermission(main.perm)) {
 					if (main.jackpot != null && main.jackpot.isRunning == true) {
 						sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&eThere's already a jackpot running"));
 						return true;
 						
+					}
+					if(Util.getTicks(args[2]) == -1) {
+						sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&cInvalid Time"));
 					}
 					main.jackpot = new Jackpot(Integer.parseInt(args[1]),
 							main.getConfig().getInt("ticketPrice"),
@@ -52,6 +56,10 @@ public class JackpotCommand implements CommandExecutor {
 						return true;
 					}
 					
+				} else if (!sender.hasPermission(main.perm)) {
+					sender.hasPermission(ChatColor.translateAlternateColorCodes('&', "&eNo Permission!"));
+				} else {
+					sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&eNot Enough Arguments"));
 				}
 				break;
 			case "join":
@@ -75,6 +83,8 @@ public class JackpotCommand implements CommandExecutor {
 
 			}
 			
+		} else {
+			sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&eNot Enough Arguments"));
 		}
 		
 		return true;
