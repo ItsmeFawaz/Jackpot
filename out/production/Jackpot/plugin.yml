@@ -1,0 +1,8 @@
+name: Jackpot
+version: 1.0.0
+main: me.bottleofglass.Jackpot.Main
+depend: [Vault]
+commands:
+   jackpot:
+     description: starts a jackpot
+     usage: /jackpot help

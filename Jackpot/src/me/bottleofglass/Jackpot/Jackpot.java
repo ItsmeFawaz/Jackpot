@@ -2,13 +2,12 @@ package me.bottleofglass.Jackpot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.permissions.Permission;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import me.bottleofglass.Jackpot.Utils.Util;
@@ -31,12 +30,12 @@ public class Jackpot {
 	public boolean isRunning = false; //The boolean that holds if the Jackpot is running or not, there can only be 1 jackpot at a time
 	
 	Economy econ; //Vault Economy
-	
-	int timeRemaining; // Remaining time
+
+	long endTime;
 	
 	List<OfflinePlayer> playerList = new ArrayList<>(); // List of players that joined
-	
-	long seconds;
+
+	BukkitTask endTask;
 	
 	
 	public Jackpot(int startprize, int ticketprice, String timeString, Main J ) {
@@ -50,69 +49,50 @@ public class Jackpot {
 		ticket = ticketprice;
 		
 		time = Util.getTicks(timeString);
-		
-		seconds = Util.getSeconds(timeString);
-		config = main.getConfig();
-		
 	}
 	
 	public void start() {
 		
 		isRunning = true;
-		
-		BukkitRunnable timer = new BukkitRunnable() {
-			public void run() {
-				stop();
-			}
-		};
-		timer.runTaskLater(main, time);
-		
-		Bukkit.getScheduler().scheduleSyncRepeatingTask(main, new Runnable() {
-			public void run() {seconds--;}
-		}, 0, 20);
-		
-		
-		
-		
-		reminder = Bukkit.getScheduler().runTaskTimer(main, new Runnable() {
-			public void run() {
-				main.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&l&6Time remaining until jackpot winner is announced: " +
-						Util.getRemainingTime(seconds)));
-				
-			}
-		} , 0, Util.getTicks(config.getString("reminderDelay")));
-		
-		
-		
+
+		endTask = Bukkit.getScheduler().runTaskLater(main, () -> {
+			stop();
+		}, time);
+		endTime = System.currentTimeMillis() + (TimeUnit.SECONDS.toMillis(time/20));
+		main.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&l&6Time remaining until jackpot winner is announced: " +
+				Util.timeInSeconds(TimeUnit.SECONDS.toMillis(time/20))));
+		reminder = Bukkit.getScheduler().runTaskTimer(main, () -> main.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&l&6Time remaining until jackpot winner is announced: " +
+				Util.timeInSeconds(endTime-System.currentTimeMillis()))), Util.getTicks(main.reminderDelay), Util.getTicks(main.reminderDelay));
+		main.getServer().broadcastMessage(Util.msg("&l&4Reminder delay: " + main.reminderDelay));
 	}
 	
 	public OfflinePlayer stop() {
 		isRunning = false;
 		reminder.cancel();
+		endTask.cancel();
 		return reward();
-		
 	}
 	
 	private OfflinePlayer reward() {
 		
 		if (playerList.isEmpty()) {
-			main.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&8Nobody joined the Jackpot event :("));
+			main.getServer().broadcastMessage(Util.msg("&8Nobody joined the Jackpot event :("));
 			return null;
 		}
 		OfflinePlayer winner = playerList.get((int) Math.round(Math.random()* (playerList.size()- 1)));
 		
-		main.econ.depositPlayer(winner, prizepool);
+		Main.getEconomy().depositPlayer(winner, prizepool);
 		
-		main.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', "&b" + winner.getName() + " has been drawn the winner of the jackpot and has won &a" + prizepool + "$"));
+		main.getServer().broadcastMessage(Util.msg("&b" + winner.getName() + " has been drawn the winner of the jackpot and has won &a" + prizepool + "$"));
 		
 		return winner;
 		
 		
 	}
-	
+
 	public void join(OfflinePlayer p) {
 		main.econ.withdrawPlayer(p, ticket);
-		
+		prizepool = prizepool+ ticket;
 		playerList.add(p);
 	}
 
